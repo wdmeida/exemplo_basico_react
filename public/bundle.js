@@ -21492,16 +21492,32 @@
 
 	var React = __webpack_require__(1);
 	var SearchUser = __webpack_require__(179);
+	var UserInfo = __webpack_require__(206);
 
 	//Cria um componente associado a uma variável.
 	var GitHub = React.createClass({
 	    displayName: 'GitHub',
 
+	    //Função do nativa do react para setar componentes iniciais que serão utilizados.
+	    getInitialState: function () {
+	        return {
+	            user: null,
+	            repos: []
+	        };
+	    },
+	    updateUser: function (user) {
+	        //Forma que o react usa para atualizar um state.
+	        this.setState({ user: user });
+	    },
+	    updateRepos: function (repos) {
+	        this.setState({ repos: repos });
+	    },
 	    render: function () {
 	        return React.createElement(
 	            'div',
 	            { className: 'container' },
-	            React.createElement(SearchUser, null)
+	            React.createElement(SearchUser, { updateUser: this.updateUser, updateRepos: this.updateRepos }),
+	            React.createElement(UserInfo, { user: this.state.user, repos: this.state.repos })
 	        );
 	    }
 	});
@@ -21514,7 +21530,7 @@
 /***/ function(module, exports, __webpack_require__) {
 
 	var React = __webpack_require__(1);
-	var GitHubUser = __webpack_require__(206);
+	var GitHubUser = __webpack_require__(180);
 
 	var SearchUser = React.createClass({
 	    displayName: 'SearchUser',
@@ -21524,12 +21540,12 @@
 	        e.preventDefault();
 
 	        GitHubUser.getByUsername(this.refs.username.value).then(function (response) {
-	            console.log(response);
-	        });
+	            this.props.updateUser(response.data);
+	        }.bind(this));
 
 	        GitHubUser.getReposByUsername(this.refs.username.value).then(function (response) {
-	            console.log(response);
-	        });
+	            this.props.updateRepos(response.data);
+	        }.bind(this));
 	    },
 	    render: function () {
 	        return React.createElement(
@@ -21568,10 +21584,33 @@
 	    }
 	});
 
+	//Garantes que as propriedades são passada com suas propriedades corretas.
+	SearchUser.propTypes = {
+	    updateUser: React.PropTypes.func.isRequired,
+	    updateRepos: React.PropTypes.func.isRequired
+	};
+
 	module.exports = SearchUser;
 
 /***/ },
-/* 180 */,
+/* 180 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var axios = __webpack_require__(181);
+
+	var GitHubUser = {
+	    getByUsername: function (username) {
+	        return axios.get('https://api.github.com/users/' + username);
+	    },
+
+	    getReposByUsername: function (username) {
+	        return axios.get('https://api.github.com/users/' + username + '/repos');
+	    }
+	};
+
+	module.exports = GitHubUser;
+
+/***/ },
 /* 181 */
 /***/ function(module, exports, __webpack_require__) {
 
@@ -23064,19 +23103,144 @@
 /* 206 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var axios = __webpack_require__(181);
+	var React = __webpack_require__(1);
 
-	var GitHubUser = {
-	    getByUsername: function (username) {
-	        return axios.get('https://api.github.com/users/' + username);
-	    },
+	var UserRepos = __webpack_require__(207);
 
-	    getReposByUsername: function (username) {
-	        return axios.get('https://api.github.com/users/' + username + '/repos');
-	    }
+	//Outra forma de criar componente do inserida no React 15.
+	function UserInfo(props) {
+	    //Verifica se o valor é válido (diferente de null).
+	    var userInfo = props.user ? React.createElement(
+	        'div',
+	        { className: 'row' },
+	        React.createElement(
+	            'div',
+	            { className: 'col-lg-4' },
+	            React.createElement('img', { className: 'img-circle', src: props.user.avatar_url, alt: 'avatar', width: '140', height: '140' }),
+	            React.createElement(
+	                'h2',
+	                null,
+	                props.user.login
+	            ),
+	            React.createElement(
+	                'p',
+	                null,
+	                props.user.name
+	            ),
+	            React.createElement(
+	                'p',
+	                null,
+	                'Followers: ',
+	                props.user.followers,
+	                ' / Folowwing: ',
+	                props.user.following
+	            ),
+	            React.createElement(
+	                'p',
+	                null,
+	                React.createElement(
+	                    'a',
+	                    { className: 'btn btn-default', href: props.user.html_url, role: 'button' },
+	                    'View details'
+	                )
+	            )
+	        ),
+	        React.createElement(
+	            'div',
+	            { className: 'col-lg-8' },
+	            React.createElement(UserRepos, { repos: props.repos })
+	        )
+	    ) : null;
+
+	    return userInfo;
+	}
+
+	//Garantes que as propriedades são passada com suas propriedades corretas.
+	UserInfo.propTypes = {
+	    user: React.PropTypes.object,
+	    repos: React.PropTypes.array
 	};
 
-	module.exports = GitHubUser;
+	module.exports = UserInfo;
+
+/***/ },
+/* 207 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var React = __webpack_require__(1);
+
+	var UserRepos = React.createClass({
+	    displayName: "UserRepos",
+
+	    getInitialState: function () {
+	        return {
+	            reposCount: 0
+	        };
+	    },
+	    //Utiliza o Life Cycle para atualizar o componente.
+	    componentWillReceiveProps: function (props) {
+	        this.setState({ reposCount: props.repos.length });
+	    },
+	    render: function () {
+	        //Intera sobre cada elemendo do array.
+	        var repos = this.props.repos.map(function (repo, key) {
+	            return React.createElement(
+	                "div",
+	                { key: key, className: "thumbnail" },
+	                React.createElement(
+	                    "div",
+	                    { className: "caption" },
+	                    React.createElement(
+	                        "h3",
+	                        null,
+	                        repo.name,
+	                        React.createElement(
+	                            "span",
+	                            { className: "badge" },
+	                            repo.stargazers_count,
+	                            " STARS"
+	                        )
+	                    ),
+	                    React.createElement(
+	                        "p",
+	                        null,
+	                        repo.description
+	                    ),
+	                    React.createElement(
+	                        "p",
+	                        null,
+	                        React.createElement(
+	                            "a",
+	                            { href: repo.html_url, className: "btn btn-primary", role: "button" },
+	                            "Repository"
+	                        ),
+	                        React.createElement(
+	                            "a",
+	                            { href: repo.html_url + '/issues', className: "btn btn-default", role: "button" },
+	                            "Issues (",
+	                            repo.open_issues,
+	                            ") "
+	                        )
+	                    )
+	                )
+	            );
+	        });
+
+	        return React.createElement(
+	            "div",
+	            null,
+	            React.createElement(
+	                "h2",
+	                null,
+	                this.state.reposCount,
+	                " Repositories"
+	            ),
+	            repos
+	        );
+	    }
+	});
+
+	module.exports = UserRepos;
 
 /***/ }
 /******/ ]);
