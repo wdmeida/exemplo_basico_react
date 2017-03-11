@@ -1,4 +1,4 @@
-<h1>Exemplo React</h1>
+<h1>Exemplo React.js</h1>
 
 <p>Exemplo prático feito no minicurso Começando com React.js do Site <a href="http://jscasts.teachable.com/" target="_blank">JS CAST</a>. A aplicação desenvolvida lista as informações de um usuário do GitHub através de seu username. Foi desenvolvido utilizando as seguintes dependências:<p>
 
