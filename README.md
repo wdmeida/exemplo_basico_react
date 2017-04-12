@@ -20,7 +20,7 @@
 <p>Dentro do diretório da aplicação, baixe as dependências necessárias através do seguinte comando:</p>
 <strong> $ npm install --save</strong>
 
-<p>Gere o webpack do projeto strong>(O módulo webpack também deve ser instalado como um módudo global do sistema)</strong>:</p>
+<p>Gere o webpack do projeto <strong>(O módulo webpack também deve ser instalado como um módudo global do sistema)</strong>:</p>
 <strong> $ webpack</strong>
 
 <p>Abra o arquivo <strong>"/public/index.html"</strong> para iniciar a aplicação.</p>
